@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 // Initialize stripe with the key from your .env
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
+const productRoutes = require('./routes/productRoutes');
 const db = require('./config/db');
 
 const app = express();
@@ -13,9 +13,9 @@ app.use(express.json());
 app.use(cors());
 
 // 2. Import and Use Routes
-// Note: These must come AFTER app is initialized
 const stripeRoutes = require('./routes/stripe');
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/products', productRoutes);
 
 // 3. Basic Health Check Route
 app.get('/', (req, res) => {
