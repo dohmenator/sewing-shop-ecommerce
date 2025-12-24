@@ -1,0 +1,102 @@
+/* 1. Global Theme */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fdfaf7; /* Creamy fabric color */
+    color: #443;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 40px 0;
+    border-bottom: 2px dashed #d81b60; /* Looks like a stitch line */
+    margin-bottom: 40px;
+}
+
+h1 {
+    color: #d81b60;
+    font-family: 'Georgia', serif;
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+/* 2. The Gallery Grid */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* 3. The "Quilted" Card Design */
+.card {
+    background: white;
+    border: 2px solid #eee;
+    border-radius: 4px; 
+    padding: 20px;
+    position: relative;
+    box-shadow: 5px 5px 0px #f0e1e6; /* Retro offset shadow */
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+/* The "Running Stitch" border effect */
+.card::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    border: 1px dashed #d1c4e9; /* Light purple stitching */
+    pointer-events: none;
+}
+
+.card:hover {
+    transform: scale(1.02);
+    border-color: #d81b60;
+}
+
+/* 4. Text & Prices */
+.category {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ad1457;
+    margin-bottom: 8px;
+}
+
+h3 {
+    margin: 10px 0;
+    color: #2c3e50;
+}
+
+.price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #2e7d32;
+    margin: 15px 0;
+}
+
+/* 5. The "Thread" Button */
+button {
+    background-color: #d81b60;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 20px; /* Rounded like a spool */
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: auto;
+    box-shadow: 0 4px 0 #880e4f; /* 3D button effect */
+    transition: all 0.1s;
+}
+
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #880e4f;
+}

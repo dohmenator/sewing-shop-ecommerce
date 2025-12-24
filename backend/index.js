@@ -1,40 +1,40 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-// Initialize stripe with the key from your .env
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// Import Routes
+const stripeRoutes = require('./routes/stripe');
 const productRoutes = require('./routes/productRoutes');
-const db = require('./config/db');
 
 const app = express();
 
-// 1. Middleware (Must come before routes)
-app.use(express.json());
-app.use(cors());
+// 1. Middleware
+app.use(cors()); // Standard practice: CORS first
+app.use(express.json()); // Then JSON parsing
 
-// 2. Import and Use Routes
-const stripeRoutes = require('./routes/stripe');
+// 2. Use Routes
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productRoutes);
 
-// 3. Basic Health Check Route
+// 3. Health Check Routes
 app.get('/', (req, res) => {
     res.send('Sewing Shop Backend is running!');
 });
 
-// 4. Test Route to verify .env loading
 app.get('/test-setup', (req, res) => {
-    const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY;
-    const port = process.env.PORT || 5000;
-    
     res.json({
         status: "Server Active",
-        port: port,
-        stripe_ready: isStripeConfigured,
-        message: isStripeConfigured 
-            ? "Stripe Key detected successfully." 
-            : "Stripe Key missing in .env file!"
+        port: process.env.PORT || 5000,
+        stripe_ready: !!process.env.STRIPE_SECRET_KEY,
+        db_url_detected: !!process.env.DATABASE_URL
     });
+});
+
+// 4. Global Error Handler (Best Practice)
+// This catches any errors that happen in your routes so the server doesn't crash
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something broke on our end!');
 });
 
 // 5. Start Server
