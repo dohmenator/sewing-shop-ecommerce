@@ -100,3 +100,22 @@ button:active {
     transform: translateY(2px);
     box-shadow: 0 2px 0 #880e4f;
 }
+
+.product-image-container {
+    width: 100%;
+    height: 200px; /* Keeps all cards the same height */
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This crops the image to fill the box perfectly */
+    transition: transform 0.3s ease;
+}
+
+.card:hover .product-image {
+    transform: scale(1.05); /* Subtle zoom effect when hovering */
+}

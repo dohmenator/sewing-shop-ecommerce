@@ -3,20 +3,15 @@ const router = express.Router();
 const pool = require('../config/db'); // This is the database connection we set up earlier
 
 // GET: Fetch all products with their category names
+// Inside backend/routes/productRoutes.js
 router.get('/', async (req, res) => {
     try {
-        const query = `
-            SELECT p.id, p.name, p.description, p.base_price, c.name AS category, p.metadata
-            FROM products p
-            JOIN categories c ON p.category_id = c.id
-            ORDER BY p.id ASC
-        `;
-        
-        const result = await pool.query(query);
+        // Change this line if it lists specific columns
+        const result = await pool.query('SELECT * FROM products ORDER BY id ASC'); 
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching products:', err.message);
-        res.status(500).json({ error: 'Server error while fetching products' });
+        console.error(err.message);
+        res.status(500).json({ error: "Server error fetching products" });
     }
 });
 
