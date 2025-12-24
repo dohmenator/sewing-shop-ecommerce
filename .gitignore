@@ -1,0 +1,11 @@
+# Security: Never upload credentials
+.env
+
+# Dependencies: No need to upload these (they are huge)
+node_modules/
+
+# Logs and system files
+npm-debug.log
+.DS_Store
+dist/
+build/
