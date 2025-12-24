@@ -9,8 +9,18 @@ const productRoutes = require('./routes/productRoutes');
 const app = express();
 
 // 1. Middleware
-app.use(cors()); // Standard practice: CORS first
-app.use(express.json()); // Then JSON parsing
+app.use(cors());
+
+// Special Middleware for Stripe: Grab the RAW body only for the webhook route
+app.use(
+    express.json({
+        verify: (req, res, buf) => {
+            if (req.originalUrl.startsWith('/api/stripe/webhook')) {
+                req.rawBody = buf; // We save the raw buffer here
+            }
+        },
+    })
+);
 
 // 2. Use Routes
 app.use('/api/stripe', stripeRoutes);
