@@ -22,6 +22,27 @@
         <p>Beautifully sewn items, made with love.</p>
     </header>
 
+    <!-- cart-sidebar -->
+    <div id="cart-icon" onclick="toggleCart()">
+    🛒 <span id="cart-count">0</span>
+    </div>
+
+    <div id="cart-sidebar" class="cart-closed">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button onclick="toggleCart()" class="close-btn">&times;</button>
+        </div>
+        
+        <div id="cart-items-container">
+            <p class="empty-msg">Your cart is empty.</p>
+        </div>
+
+        <div class="cart-footer">
+            <h3>Total: $<span id="cart-total">0.00</span></h3>
+            <button id="checkout-button" onclick="initiateCheckout()">Proceed to Checkout</button>
+        </div>
+    </div>
+
     <div id="product-gallery" class="gallery">
         <p>Loading the latest creations...</p>
     </div>

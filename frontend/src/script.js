@@ -1,21 +1,90 @@
 const API_URL = 'http://localhost:5000/api/products';
+let cart = [];
+let allProducts = [];
 
-async function fetchProducts() {
+// 1. Professional Currency Formatter
+const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+});
+
+// 2. Refined Fetch (Single Source of Truth)
+async function init() {
     try {
         const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Failed to fetch');
         
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        const products = await response.json();
-        displayProducts(products);
+        allProducts = await response.json();
+        displayProducts(allProducts);
     } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Initial load error:', error);
         document.getElementById('product-gallery').innerHTML = `
-            <p style="color: red;">Oops! We couldn't load the products. Make sure your backend server is running.</p>
+            <p class="error">Unable to load shop. Please try again later.</p>
         `;
     }
+}
+
+
+// This function bridges the gap between your Cart and Stripe
+async function initiateCheckout() {
+    // 1. Safety Check: Don't try to buy nothing!
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+
+    const btn = document.getElementById('checkout-button');
+    
+    try {
+        // 2. Visual Feedback for Bonnie's customer
+        btn.innerText = "Connecting to Secure Checkout...";
+        btn.disabled = true;
+
+        // 3. Send the 'cart' array to your server
+        const response = await fetch('http://localhost:5000/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ items: cart }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Server responded with an error');
+        }
+
+        // 4. Get the Stripe URL from your backend and go there
+        const { url } = await response.json();
+        window.location.href = url;
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Could not start checkout. Please check if the backend is running.');
+        
+        // Reset button if it fails
+        btn.innerText = "Proceed to Checkout";
+        btn.disabled = false;
+    }
+}
+
+
+// 3. Logic: Add with Quantity
+function handlePurchase(productId) {
+    const product = allProducts.find(p => p.id === productId);
+    if (!product) return;
+
+    // Check if item already in cart
+    const existingItem = cart.find(item => item.id === productId);
+
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        // Add new item with a quantity property
+        cart.push({ ...product, quantity: 1 });
+    }
+
+    updateCartUI();
+    openCart(); // Better than toggling (ensure it's open)
 }
 
 function displayProducts(products) {
@@ -26,7 +95,7 @@ function displayProducts(products) {
         const productCard = document.createElement('div');
         productCard.className = 'card';
 
-        // We use a fallback image in case image_url is null (like your Poker Card Holder)
+        // Use our local images with a fallback
         const displayImage = product.image_url || 'public/images/placeholder.jpg';
 
         productCard.innerHTML = `
@@ -35,45 +104,72 @@ function displayProducts(products) {
             <img src="${displayImage}" 
                  alt="${product.name}" 
                  class="product-image" 
-                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                 onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
 
-            <h3>${product.name}</h3>
-            <p>${product.description}</p>
-            <p class="price">$${product.base_price}</p>
-            <button onclick="handlePurchase(${product.id})">Add to Cart</button>
+            <div class="card-content">
+                <h3>${product.name}</h3>
+                <p>${product.description}</p>
+                <p class="price">${formatter.format(product.base_price)}</p>
+                <button class="add-btn" onclick="handlePurchase(${product.id})">Add to Cart</button>
+            </div>
         `;
 
         gallery.appendChild(productCard);
     });
 }
 
-async function handlePurchase(productId) {
-    try {
-        console.log(`Initiating purchase for Product ID: ${productId}`);
+function updateCartUI() {
+    const container = document.getElementById('cart-items-container');
+    const totalEl = document.getElementById('cart-total');
+    const countEl = document.getElementById('cart-count');
 
-        // 1. Tell the backend which product we want to buy
-        const response = await fetch('http://localhost:5000/api/stripe/create-checkout-session', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ productId: productId }),
-        });
+    container.innerHTML = '';
+    let total = 0;
+    let itemCount = 0;
 
-        const session = await response.json();
+    cart.forEach((item, index) => {
+        const itemTotal = parseFloat(item.base_price) * item.quantity;
+        total += itemTotal;
+        itemCount += item.quantity;
 
-        // 2. If the backend returns a Stripe URL, send the user there
-        if (session.url) {
-            window.location.href = session.url;
-        } else {
-            alert('Checkout failed. Please try again.');
-            console.error('Session error:', session);
-        }
-    } catch (error) {
-        console.error('Error during checkout:', error);
-        alert('Could not connect to the payment server.');
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
+            <div class="cart-item-row">
+                <span>${item.quantity}x <strong>${item.name}</strong></span>
+                <span>${formatter.format(itemTotal)}</span>
+                <button onclick="removeFromCart(${index})" class="remove-btn">&times;</button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    totalEl.innerText = formatter.format(total).replace('$', '');
+    countEl.innerText = itemCount;
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p class="empty-msg">Your cart is empty.</p>';
     }
 }
 
-// Start the process
-fetchProducts();
+// 4. UI Helper Functions
+function openCart() {
+    const sidebar = document.getElementById('cart-sidebar');
+    sidebar.classList.replace('cart-closed', 'cart-open');
+}
+
+function toggleCart() {
+    const sidebar = document.getElementById('cart-sidebar');
+    sidebar.classList.toggle('cart-open');
+    sidebar.classList.toggle('cart-closed');
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartUI();
+}
+
+
+
+// Kick everything off
+init();

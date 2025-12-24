@@ -119,3 +119,92 @@ button:active {
 .card:hover .product-image {
     transform: scale(1.05); /* Subtle zoom effect when hovering */
 }
+
+/* Cart Icon Styling */
+#cart-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ff6b6b;
+    color: white;
+    padding: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Sidebar Sidebar */
+#cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100%;
+    background: white;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    padding-bottom: 40px; /*Extra space at the very bottom of sidebar */
+}
+
+/* Off-screen state */
+.cart-closed {
+    transform: translateX(100%);
+}
+
+/* On-screen state */
+.cart-open {
+    transform: translateX(0);
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+#cart-items-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+#checkout-button {
+    width: 100%;
+    background: #28a745;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    margin-top: 15px;      /* Space above the button */
+    margin-bottom: 10px;   /* Space below the button so it's not cut off */
+}
+
+/* Add this to style.css */
+.card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.add-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-btn:hover {
+    background-color: #555;
+}
