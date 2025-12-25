@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const pool = require('../config/db');
+// const { sendOrderConfirmation } = require('../utils/email');
+const { sendOrderConfirmation, sendShippingConfirmation } = require('../utils/email');
 
 // --- 1. POST: Create a checkout session ---
 router.post('/create-checkout-session', async (req, res) => {
@@ -74,16 +76,16 @@ router.post('/webhook', async (req, res) => {
         try {
             await client.query('BEGIN');
 
-            // Insert Order
+            // 1. Insert Order
             const orderSql = `
                 INSERT INTO orders (customer_email, total_amount, stripe_payment_intent_id, status)
                 VALUES ($1, $2, $3, 'paid') 
                 RETURNING id;
             `;
             const orderRes = await client.query(orderSql, [customerEmail, totalAmount, paymentIntentId]);
-            const orderId = orderRes.rows[0].id;
+            const orderId = orderRes.rows[0].id; // We use orderId now, not newOrder.id
 
-            // Insert Order Items
+            // 2. Insert Order Items
             const itemSql = `
                 INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
                 VALUES ($1, $2, $3, $4);
@@ -94,7 +96,12 @@ router.post('/webhook', async (req, res) => {
             }
 
             await client.query('COMMIT');
+            
+            // This is your primary success log!
             console.log(`✨ Success: Order ${orderId} recorded for ${customerEmail}`);
+
+            // 3. Trigger the email 
+            await sendOrderConfirmation(customerEmail, totalAmount);
             
         } catch (dbErr) {
             await client.query('ROLLBACK');
@@ -154,7 +161,18 @@ router.patch('/orders/:id/status', async (req, res) => {
             return res.status(404).json({ error: "Order not found" });
         }
 
-        res.json({ message: "Status updated successfully", order: result.rows[0] });
+        // --- NEW: If the status changed to 'shipped', trigger the mock email ---
+        if (status === 'shipped') {
+            const customerEmail = result.rows[0].customer_email;
+            await sendShippingConfirmation(customerEmail, id);
+            console.log(`📦 Shipping notification triggered for Order #${id}`);
+        }
+
+        res.json({ 
+            message: "Status updated successfully", 
+            order: result.rows[0] 
+        });
+        
     } catch (err) {
         console.error('Error updating order:', err);
         res.status(500).json({ error: 'Internal Server Error' });

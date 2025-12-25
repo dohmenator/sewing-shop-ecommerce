@@ -117,21 +117,21 @@
     });
 
     async function updateStatus(orderId, newStatus) {
-        try {
-            const response = await fetch(`http://localhost:5000/api/stripe/orders/${orderId}/status`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
+    try {
+        const response = await fetch(`http://localhost:5000/api/stripe/orders/${orderId}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        });
 
-            if (response.ok) {
-                alert(`Order #${orderId} marked as ${newStatus}!`);
-                location.reload(); // Refresh the table to show the change
-            }
-        } catch (err) {
-            console.error("Error updating status:", err);
+        if (response.ok) {
+            // Re-fetch the data to update the UI instantly and smoothly
+            fetchOrders(); 
         }
+    } catch (err) {
+        console.error("Error updating status:", err);
     }
+}
 
 
     fetchOrders();
