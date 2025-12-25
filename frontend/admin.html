@@ -68,13 +68,37 @@
                         </ul>
                     </td>
                     <td>$${order.total_amount}</td>
-                    <td><strong>${order.status.toUpperCase()}</strong></td>
+                    <td>
+                        <strong>${order.status.toUpperCase()}</strong>
+                        ${order.status === 'paid' ? 
+                            `<br><button onclick="updateStatus(${order.id}, 'shipped')">Mark Shipped</button>` : 
+                            ''
+                        }
+                    </td>
                 </tr>
             `).join('');
         } catch (err) {
             console.error("Failed to load orders:", err);
         }
     }
+
+    async function updateStatus(orderId, newStatus) {
+        try {
+            const response = await fetch(`http://localhost:5000/api/stripe/orders/${orderId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+
+            if (response.ok) {
+                alert(`Order #${orderId} marked as ${newStatus}!`);
+                location.reload(); // Refresh the table to show the change
+            }
+        } catch (err) {
+            console.error("Error updating status:", err);
+        }
+    }
+
 
     fetchOrders();
 </script>

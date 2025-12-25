@@ -138,4 +138,28 @@ router.get('/orders', async (req, res) => {
     }
 });
 
+
+// --- 4. PATCH: Update order status (Mark as Shipped) ---
+router.patch('/orders/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    try {
+        const result = await pool.query(
+            'UPDATE orders SET status = $1 WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+
+        res.json({ message: "Status updated successfully", order: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating order:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 module.exports = router;
