@@ -108,4 +108,34 @@ router.post('/webhook', async (req, res) => {
     res.json({ received: true });
 });
 
+// --- 3. GET: Fetch all orders for the Admin Dashboard ---
+router.get('/orders', async (req, res) => {
+    try {
+        // This query gets the order details and aggregates the items into a list
+        const result = await pool.query(`
+            SELECT 
+                o.id, 
+                o.customer_email, 
+                o.total_amount, 
+                o.status, 
+                o.created_at,
+                json_agg(json_build_object(
+                    'product_name', p.name,
+                    'quantity', oi.quantity,
+                    'price', oi.price_at_purchase
+                )) AS items
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN products p ON oi.product_id = p.id
+            GROUP BY o.id
+            ORDER BY o.created_at DESC;
+        `);
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching orders:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router;
