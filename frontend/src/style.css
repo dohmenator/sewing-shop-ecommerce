@@ -21,26 +21,27 @@ h1 {
     margin-bottom: 5px;
 }
 
-/* 2. The Gallery Grid */
+/* 2. Update Gallery Grid: Change 280px to 200px */
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 30px;
-    max-width: 1100px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Smaller minimum width */
+    gap: 20px; /* Reduced gap slightly */
+    max-width: 1200px; /* Allow wider layout if screen is big */
     margin: 0 auto;
 }
 
-/* 3. The "Quilted" Card Design */
+/* 3. Update the Card: Add height constraints */
 .card {
     background: white;
     border: 2px solid #eee;
     border-radius: 4px; 
-    padding: 20px;
+    padding: 15px; /* Reduced padding */
     position: relative;
-    box-shadow: 5px 5px 0px #f0e1e6; /* Retro offset shadow */
+    box-shadow: 5px 5px 0px #f0e1e6;
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;
+    height: 400px; /* Set a fixed height for uniformity */
 }
 
 /* The "Running Stitch" border effect */
@@ -101,12 +102,13 @@ button:active {
     box-shadow: 0 2px 0 #880e4f;
 }
 
+/* Update Image Container: Reduce height from 200px to 140px */
 .product-image-container {
     width: 100%;
-    height: 200px; /* Keeps all cards the same height */
+    height: 140px; 
     overflow: hidden;
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .product-image {
