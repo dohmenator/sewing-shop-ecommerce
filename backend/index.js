@@ -1,10 +1,14 @@
-require('dotenv').config();
+const path=require('path');
+// This finds the .env file in the same folder as index.js, no matter where you start the terminal
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 
 // Import Routes
 const stripeRoutes = require('./routes/stripe');
 const productRoutes = require('./routes/productRoutes');
+const authRoutes = require('./routes/auth');
+
 
 const app = express();
 
@@ -25,6 +29,7 @@ app.use(
 // 2. Use Routes
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes);
 
 // 3. Health Check Routes
 app.get('/', (req, res) => {
