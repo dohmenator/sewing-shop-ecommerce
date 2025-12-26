@@ -1,6 +1,7 @@
-const path=require('path');
-// This finds the .env file in the same folder as index.js, no matter where you start the terminal
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+const path = require('path');
+// Keep this: it's the "bulletproof" way to find your keys
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+
 const express = require('express');
 const cors = require('cors');
 

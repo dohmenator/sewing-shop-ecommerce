@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const pool = require('../config/db');
-// const { sendOrderConfirmation } = require('../utils/email');
 const { sendOrderConfirmation, sendShippingConfirmation } = require('../utils/email');
+const authenticateToken = require('../middleware/authMiddleware'); // Path to middleware auth file
+
+// Initialize stripe inside a helper or just ensure the key is a string
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '');
 
 // --- 1. POST: Create a checkout session ---
 router.post('/create-checkout-session', async (req, res) => {
@@ -115,10 +117,11 @@ router.post('/webhook', async (req, res) => {
     res.json({ received: true });
 });
 
+
 // --- 3. GET: Fetch all orders for the Admin Dashboard ---
-router.get('/orders', async (req, res) => {
+// Note the 'authenticateToken' added as the second argument below:
+router.get('/orders', authenticateToken, async (req, res) => {
     try {
-        // This query gets the order details and aggregates the items into a list
         const result = await pool.query(`
             SELECT 
                 o.id, 

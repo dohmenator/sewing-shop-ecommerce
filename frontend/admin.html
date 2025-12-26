@@ -12,10 +12,24 @@
         tr:nth-child(even) { background-color: #f9f9f9; }
         .item-list { font-size: 0.9em; color: #555; margin: 0; padding-left: 15px; }
     </style>
+    <script>
+    // Check if the token exists
+    const token = localStorage.getItem('adminToken');
+    
+    if (!token) {
+        // No token found, kick them back to login
+        window.location.href = 'login.html';
+    }
+</script>
 </head>
 <body>
     <div class="container">
-        <h1>Orders Dashboard</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">Orders Dashboard</h1>
+            <button id="logoutBtn" style="background-color: #d81b60; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-family: sans-serif; font-weight: bold;">
+                Logout
+            </button>
+        </div>
         <!-- The Search Bar -->
         <div style="margin-bottom: 20px;">
             <input type="text" id="admin-search" placeholder="Search by email or Order ID..." 
@@ -51,30 +65,46 @@
     let allOrders = []; // To store data for searching
 
     async function fetchOrders() {
-        // 1. Get the secret from the URL (e.g., admin.html?secret=...)
-        const urlParams = new URLSearchParams(window.location.search);
-        const secret = urlParams.get('secret');
+        // 1. Get the token we saved during login
+        const token = localStorage.getItem('adminToken');
 
-        // 2. The secret key (Keep this simple for now)
-        const MY_SECRET = 'bonnie-sews-2025';
-
-        if (secret !== MY_SECRET) {
+        // 2. Security Check: If no token, show Access Denied
+        if (!token) {
             document.body.innerHTML = `
                 <div style="text-align:center; margin-top:50px;">
                     <h1>🔒 Access Denied</h1>
-                    <p>You are not authorized to view this page.</p>
+                    <p>Please <a href="login.html">login</a> to view the admin dashboard.</p>
                 </div>`;
             return;
         }
 
         try {
-            const response = await fetch('http://localhost:5000/api/stripe/orders');
-            allOrders = await response.json(); // Store the data here
+            // 3. Fetch orders and include the Token in the "Authorization" header
+            const response = await fetch('http://localhost:5000/api/stripe/orders', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // 4. Handle expired or invalid tokens
+            if (response.status === 401 || response.status === 403) {
+                localStorage.removeItem('adminToken'); // Clear the bad token
+                window.location.href = 'login.html';
+                return;
+            }
+
+            allOrders = await response.json(); 
             
-            displayOrders(allOrders); // Call a separate function to render the rows
-            updateStats(allOrders);   // Call a separate function for the stats
+            // 5. Render the data using your existing functions
+            displayOrders(allOrders); 
+            updateStats(allOrders);   
+            
         } catch (err) {
             console.error("Failed to load orders:", err);
+            const container = document.getElementById('orders-container');
+            if (container) container.innerHTML = '<p>Error loading orders. Is the server running?</p>';
         }
     }
 
@@ -114,6 +144,15 @@
             order.id.toString().includes(searchTerm)
         );
         displayOrders(filtered);
+    });
+
+       // --- The Log Out Logic ---
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        // 1. Clear the token from the browser's memory
+        localStorage.removeItem('adminToken');
+        
+        // 2. Redirect back to login
+        window.location.href = 'login.html';
     });
 
     async function updateStatus(orderId, newStatus) {
