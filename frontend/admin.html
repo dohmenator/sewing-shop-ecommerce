@@ -1,51 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Bonnie's Sewing - Admin Dashboard</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #5b3a29; color: white; }
-        tr:nth-child(even) { background-color: #f9f9f9; }
-        .item-list { font-size: 0.9em; color: #555; margin: 0; padding-left: 15px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f4f4f4;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Product Form Styling */
+        #product-management {
+            background: #fdfaf7;
+            border: 2px solid #5b3a29;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .form-title {
+            color: #5b3a29;
+            font-family: Georgia, serif;
+            margin-top: 0;
+            border-bottom: 2px dashed #d81b60;
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 5px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #5b3a29;
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        /* Button Styling */
+        .btn-submit {
+            grid-column: span 2;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: #1b5e20;
+        }
+
+        .btn-submit:disabled {
+            background-color: #9e9e9e;
+            cursor: not-allowed;
+        }
+
+        /* Tables & UI */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th,
+        td {
+            border: 1px solid #eee;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #5b3a29;
+            color: white;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .item-list {
+            font-size: 0.85em;
+            color: #666;
+            padding-left: 20px;
+        }
     </style>
     <script>
-    // Check if the token exists
-    const token = localStorage.getItem('adminToken');
-    
-    if (!token) {
-        // No token found, kick them back to login
-        window.location.href = 'login.html';
-    }
-</script>
+        const token = localStorage.getItem('adminToken');
+        if (!token) window.location.href = 'login.html';
+    </script>
 </head>
+
 <body>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="margin: 0;">Orders Dashboard</h1>
-            <button id="logoutBtn" style="background-color: #d81b60; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-family: sans-serif; font-weight: bold;">
-                Logout
-            </button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-family: Georgia, serif;">Orders Dashboard</h1>
+            <button id="logoutBtn"
+                style="background-color: #d81b60; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 4px; font-weight: bold;">Logout</button>
         </div>
-        <!-- The Search Bar -->
+
+        <div id="product-management">
+            <h2 class="form-title">🧵 Add New Product to Catalog</h2>
+
+            <div id="status-msg"
+                style="display:none; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-weight: bold; text-align: center;">
+            </div>
+
+            <form id="product-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Product Name</label>
+                    <input type="text" id="p-name" required placeholder="e.g., Floral Tablet Case">
+                </div>
+
+                <div class="input-group">
+                    <label>Price ($)</label>
+                    <input type="number" id="p-price" step="0.01" required placeholder="0.00">
+                </div>
+
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Product Details (Size, Materials, etc.)</label>
+                    <textarea id="p-desc" placeholder="Enter product specifications..."></textarea>
+                </div>
+
+                <div class="input-group">
+                    <label>Category</label>
+                    <select id="p-category" required>
+                        <option value="">-- Loading --</option>
+                    </select>
+                    <input type="text" id="new-category-input" placeholder="Enter new category name..."
+                        style="margin-top:8px; display:none;">
+                </div>
+
+                <div class="input-group">
+                    <label>Product Image</label>
+                    <input type="file" id="p-image" accept="image/*" required>
+                </div>
+
+                <button type="submit" id="add-product-btn" class="btn-submit">✨ Add Product to Shop</button>
+            </form>
+        </div>
+
         <div style="margin-bottom: 20px;">
-            <input type="text" id="admin-search" placeholder="Search by email or Order ID..." 
-                style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 4px; font-size: 1rem;">
+            <input type="text" id="admin-search" placeholder="🔍 Search orders by email or ID..."
+                style="width: 100%; box-sizing: border-box;">
         </div>
-        <div id="stats"></div>
+
         <div id="stats-container" style="display: flex; gap: 20px; margin-bottom: 25px;">
-            <div style="background: #fdfaf7; border: 2px dashed #d81b60; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 style="margin: 0; color: #d81b60; font-family: Georgia, serif;">Total Orders</h3>
+            <div
+                style="background: #fff; border: 2px dashed #d81b60; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 style="margin: 0; color: #d81b60;">Total Orders</h3>
                 <p id="total-orders-count" style="font-size: 1.8em; font-weight: bold; margin: 5px 0;">0</p>
             </div>
-            <div style="background: #fdfaf7; border: 2px dashed #2e7d32; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
-                <h3 style="margin: 0; color: #2e7d32; font-family: Georgia, serif;">Total Revenue</h3>
+            <div
+                style="background: #fff; border: 2px dashed #2e7d32; padding: 15px; border-radius: 8px; flex: 1; text-align: center;">
+                <h3 style="margin: 0; color: #2e7d32;">Total Revenue</h3>
                 <p id="total-revenue-amount" style="font-size: 1.8em; font-weight: bold; margin: 5px 0;">$0.00</p>
             </div>
         </div>
+
         <table>
             <thead>
                 <tr>
@@ -57,123 +201,156 @@
                     <th>Status</th>
                 </tr>
             </thead>
-            <tbody id="order-table-body">
-                </tbody>
+            <tbody id="order-table-body"></tbody>
         </table>
     </div>
-<script>
-    let allOrders = []; // To store data for searching
 
-    async function fetchOrders() {
-        // 1. Get the token we saved during login
-        const token = localStorage.getItem('adminToken');
+    <script>
+        let allOrders = [];
 
-        // 2. Security Check: If no token, show Access Denied
-        if (!token) {
-            document.body.innerHTML = `
-                <div style="text-align:center; margin-top:50px;">
-                    <h1>🔒 Access Denied</h1>
-                    <p>Please <a href="login.html">login</a> to view the admin dashboard.</p>
-                </div>`;
-            return;
-        }
+        // --- Handle Product Form Submission ---
+        document.getElementById('product-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-        try {
-            // 3. Fetch orders and include the Token in the "Authorization" header
-            const response = await fetch('http://localhost:5000/api/stripe/orders', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+            const btn = document.getElementById('add-product-btn');
+            const statusMsg = document.getElementById('status-msg');
+
+            // Set Loading State
+            btn.disabled = true;
+            btn.textContent = "⌛ Saving Product...";
+
+            try {
+                const formData = new FormData();
+                const categoryValue = (document.getElementById('p-category').value === "NEW_CATEGORY")
+                    ? document.getElementById('new-category-input').value
+                    : document.getElementById('p-category').value;
+
+                formData.append('name', document.getElementById('p-name').value);
+                formData.append('price', document.getElementById('p-price').value);
+                formData.append('description', document.getElementById('p-desc').value);
+                formData.append('category_id', categoryValue);
+                formData.append('image', document.getElementById('p-image').files[0]);
+
+                const response = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showStatus("✨ Product added successfully!", "#d4edda", "#155724");
+                    this.reset();
+                    document.getElementById('new-category-input').style.display = 'none';
+                    loadCategories();
+                } else {
+                    const err = await response.json();
+                    showStatus("Error: " + (err.error || "Upload failed"), "#f8d7da", "#721c24");
                 }
-            });
-
-            // 4. Handle expired or invalid tokens
-            if (response.status === 401 || response.status === 403) {
-                localStorage.removeItem('adminToken'); // Clear the bad token
-                window.location.href = 'login.html';
-                return;
+            } catch (err) {
+                showStatus("Network Error: Could not reach server", "#f8d7da", "#721c24");
+            } finally {
+                btn.disabled = false;
+                btn.textContent = "✨ Add Product to Shop";
             }
-
-            allOrders = await response.json(); 
-            
-            // 5. Render the data using your existing functions
-            displayOrders(allOrders); 
-            updateStats(allOrders);   
-            
-        } catch (err) {
-            console.error("Failed to load orders:", err);
-            const container = document.getElementById('orders-container');
-            if (container) container.innerHTML = '<p>Error loading orders. Is the server running?</p>';
-        }
-    }
-
-    function displayOrders(ordersToDisplay) {
-        const tableBody = document.getElementById('order-table-body');
-        tableBody.innerHTML = ordersToDisplay.map(order => `
-            <tr>
-                <td>#${order.id}</td>
-                <td>${order.customer_email}</td>
-                <td>${new Date(order.created_at).toLocaleDateString()}</td>
-                <td>
-                    <ul class="item-list">
-                        ${order.items.map(item => `<li>${item.quantity}x ${item.product_name}</li>`).join('')}
-                    </ul>
-                </td>
-                <td>$${order.total_amount}</td>
-                <td>
-                    <strong>${order.status.toUpperCase()}</strong>
-                    ${order.status === 'paid' ? 
-                        `<br><button onclick="updateStatus(${order.id}, 'shipped')">Mark Shipped</button>` : ''}
-                </td>
-            </tr>
-        `).join('');
-    }
-
-    function updateStats(orders) {
-        const totalRevenue = orders.reduce((sum, order) => sum + parseFloat(order.total_amount), 0);
-        document.getElementById('total-orders-count').innerText = orders.length;
-        document.getElementById('total-revenue-amount').innerText = `$${totalRevenue.toFixed(2)}`;
-    }
-
-    // --- The Search Logic ---
-    document.getElementById('admin-search').addEventListener('input', (e) => {
-        const searchTerm = e.target.value.toLowerCase();
-        const filtered = allOrders.filter(order => 
-            order.customer_email.toLowerCase().includes(searchTerm) || 
-            order.id.toString().includes(searchTerm)
-        );
-        displayOrders(filtered);
-    });
-
-       // --- The Log Out Logic ---
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        // 1. Clear the token from the browser's memory
-        localStorage.removeItem('adminToken');
-        
-        // 2. Redirect back to login
-        window.location.href = 'login.html';
-    });
-
-    async function updateStatus(orderId, newStatus) {
-    try {
-        const response = await fetch(`http://localhost:5000/api/stripe/orders/${orderId}/status`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: newStatus })
         });
 
-        if (response.ok) {
-            // Re-fetch the data to update the UI instantly and smoothly
-            fetchOrders(); 
+        function showStatus(text, bg, color) {
+            const msgEl = document.getElementById('status-msg');
+            msgEl.textContent = text;
+            msgEl.style.backgroundColor = bg;
+            msgEl.style.color = color;
+            msgEl.style.display = "block";
+            setTimeout(() => { msgEl.style.display = "none"; }, 5000);
         }
-    } catch (err) {
-        console.error("Error updating status:", err);
-    }
-}
 
+        // --- Category Loading Logic ---
+        async function loadCategories() {
+            try {
+                const response = await fetch('http://localhost:5000/api/products/categories');
+                const categories = await response.json();
+                const select = document.getElementById('p-category');
 
-    fetchOrders();
-</script>
+                select.innerHTML = '<option value="">-- Select Category --</option>';
+                categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat.id;
+                    opt.textContent = cat.name;
+                    select.appendChild(opt);
+                });
+
+                select.innerHTML += '<option value="NEW_CATEGORY">+ Add New Category</option>';
+            } catch (err) { console.error("Category load failed"); }
+        }
+
+        document.getElementById('p-category').addEventListener('change', function () {
+            document.getElementById('new-category-input').style.display = (this.value === "NEW_CATEGORY") ? "block" : "none";
+        });
+
+        // --- Order Management Logic ---
+        async function fetchOrders() {
+            try {
+                const response = await fetch('http://localhost:5000/api/stripe/orders', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('adminToken')}` }
+                });
+
+                if (response.status === 401) {
+                    localStorage.removeItem('adminToken');
+                    window.location.href = 'login.html';
+                }
+
+                allOrders = await response.json();
+                displayOrders(allOrders);
+                updateStats(allOrders);
+            } catch (err) { console.error("Order fetch failed"); }
+        }
+
+        function displayOrders(orders) {
+            document.getElementById('order-table-body').innerHTML = orders.map(order => `
+                <tr>
+                    <td>#${order.id}</td>
+                    <td>${order.customer_email}</td>
+                    <td>${new Date(order.created_at).toLocaleDateString()}</td>
+                    <td><ul class="item-list">${order.items.map(i => `<li>${i.quantity}x ${i.product_name}</li>`).join('')}</ul></td>
+                    <td>$${order.total_amount}</td>
+                    <td>
+                        <strong>${order.status.toUpperCase()}</strong>
+                        ${order.status === 'paid' ? `<br><button onclick="updateStatus(${order.id}, 'shipped')">Mark Shipped</button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(orders) {
+            const total = orders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0);
+            document.getElementById('total-orders-count').innerText = orders.length;
+            document.getElementById('total-revenue-amount').innerText = `$${total.toFixed(2)}`;
+        }
+
+        async function updateStatus(id, status) {
+            await fetch(`http://localhost:5000/api/stripe/orders/${id}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            fetchOrders();
+        }
+
+        // Search Listener
+        document.getElementById('admin-search').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            displayOrders(allOrders.filter(o => o.customer_email.toLowerCase().includes(term) || o.id.toString().includes(term)));
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('adminToken');
+            window.location.href = 'login.html';
+        });
+
+        // Initial Load
+        loadCategories();
+        fetchOrders();
+    </script>
 </body>
+
 </html>

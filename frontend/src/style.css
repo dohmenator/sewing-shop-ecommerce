@@ -71,6 +71,26 @@ h1 {
     margin-bottom: 8px;
 }
 
+/* Styling for Bonnie's Dimensions (The italicized measurements) */
+.dimensions {
+    font-size: 0.82rem;
+    color: #7d7d7d;
+    font-style: italic;
+    margin: -2px 0 5px 0; /* Tight spacing between category and title */
+}
+
+/* Ensure the description doesn't overflow the 400px card */
+.card-content p.description {
+    font-size: 0.9rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Shows only 2 lines of description max */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+
 h3 {
     margin: 10px 0;
     color: #2c3e50;

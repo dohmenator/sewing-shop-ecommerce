@@ -150,7 +150,8 @@ router.get('/orders', authenticateToken, async (req, res) => {
 
 
 // --- 4. PATCH: Update order status (Mark as Shipped) ---
-router.patch('/orders/:id/status', async (req, res) => {
+// Added authenticateToken as the second argument
+router.patch('/orders/:id/status', authenticateToken, async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
 

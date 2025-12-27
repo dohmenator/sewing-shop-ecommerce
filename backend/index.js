@@ -31,6 +31,7 @@ app.use(
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 3. Health Check Routes
 app.get('/', (req, res) => {
