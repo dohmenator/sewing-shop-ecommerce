@@ -20,7 +20,8 @@ router.post('/create-checkout-session', async (req, res) => {
                     name: item.name,
                     description: item.description,
                 },
-                unit_amount: Math.round(parseFloat(item.base_price) * 100), // Convert to cents
+                // 💰 FIX: Change item.base_price to item.price
+                unit_amount: Math.round(parseFloat(item.price) * 100),
             },
             quantity: item.quantity,
         }));
@@ -31,10 +32,10 @@ router.post('/create-checkout-session', async (req, res) => {
             mode: 'payment',
             // Pass metadata so the Webhook knows which Database IDs were purchased
             metadata: {
-                cartItems: JSON.stringify(items.map(i => ({ 
-                    id: i.id, 
-                    quantity: i.quantity, 
-                    price: i.base_price 
+                cartItems: JSON.stringify(items.map(i => ({
+                    id: i.id,
+                    quantity: i.quantity,
+                    price: i.price  // 💰 FIX: Change i.base_price to i.price
                 })))
             },
             success_url: 'http://127.0.0.1:5500/frontend/success.html',
@@ -92,19 +93,19 @@ router.post('/webhook', async (req, res) => {
                 INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase)
                 VALUES ($1, $2, $3, $4);
             `;
-            
+
             for (const item of cartItems) {
                 await client.query(itemSql, [orderId, item.id, item.quantity, item.price]);
             }
 
             await client.query('COMMIT');
-            
+
             // This is your primary success log!
             console.log(`✨ Success: Order ${orderId} recorded for ${customerEmail}`);
 
             // 3. Trigger the email 
             await sendOrderConfirmation(customerEmail, totalAmount);
-            
+
         } catch (dbErr) {
             await client.query('ROLLBACK');
             console.error('❌ Database Transaction Error:', dbErr);
@@ -172,11 +173,11 @@ router.patch('/orders/:id/status', authenticateToken, async (req, res) => {
             console.log(`📦 Shipping notification triggered for Order #${id}`);
         }
 
-        res.json({ 
-            message: "Status updated successfully", 
-            order: result.rows[0] 
+        res.json({
+            message: "Status updated successfully",
+            order: result.rows[0]
         });
-        
+
     } catch (err) {
         console.error('Error updating order:', err);
         res.status(500).json({ error: 'Internal Server Error' });

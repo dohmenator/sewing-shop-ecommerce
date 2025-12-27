@@ -1,7 +1,8 @@
 /* 1. Global Theme */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fdfaf7; /* Creamy fabric color */
+    background-color: #fdfaf7;
+    /* Creamy fabric color */
     color: #443;
     margin: 0;
     padding: 20px;
@@ -10,7 +11,8 @@ body {
 header {
     text-align: center;
     padding: 40px 0;
-    border-bottom: 2px dashed #d81b60; /* Looks like a stitch line */
+    border-bottom: 2px dashed #d81b60;
+    /* Looks like a stitch line */
     margin-bottom: 40px;
 }
 
@@ -24,24 +26,31 @@ h1 {
 /* 2. Update Gallery Grid: Change 280px to 200px */
 .gallery {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Smaller minimum width */
-    gap: 20px; /* Reduced gap slightly */
-    max-width: 1200px; /* Allow wider layout if screen is big */
-    margin: 0 auto;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 300px));
+    /* Limits max width of cards */
+    gap: 30px;
+    max-width: 1200px;
+    margin: 40px auto;
+    justify-content: center;
+    /* Centers the products if there are only a few */
 }
 
 /* 3. Update the Card: Add height constraints */
 .card {
     background: white;
     border: 2px solid #eee;
-    border-radius: 4px; 
-    padding: 15px; /* Reduced padding */
+    border-radius: 8px;
+    /* Slightly rounder for a softer feel */
+    padding: 0;
+    /* Let the image container handle spacing */
     position: relative;
     box-shadow: 5px 5px 0px #f0e1e6;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
-    height: 400px; /* Set a fixed height for uniformity */
+    height: 450px;
+    /* Increased slightly to give text more breathing room */
+    overflow: hidden;
+    /* Keeps the stitching and image inside */
 }
 
 /* The "Running Stitch" border effect */
@@ -52,7 +61,8 @@ h1 {
     left: 5px;
     right: 5px;
     bottom: 5px;
-    border: 1px dashed #d1c4e9; /* Light purple stitching */
+    border: 1px dashed #d1c4e9;
+    /* Light purple stitching */
     pointer-events: none;
 }
 
@@ -76,7 +86,8 @@ h1 {
     font-size: 0.82rem;
     color: #7d7d7d;
     font-style: italic;
-    margin: -2px 0 5px 0; /* Tight spacing between category and title */
+    margin: -2px 0 5px 0;
+    /* Tight spacing between category and title */
 }
 
 /* Ensure the description doesn't overflow the 400px card */
@@ -84,7 +95,8 @@ h1 {
     font-size: 0.9rem;
     line-height: 1.4;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Shows only 2 lines of description max */
+    -webkit-line-clamp: 2;
+    /* Shows only 2 lines of description max */
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 10px;
@@ -109,11 +121,13 @@ button {
     color: white;
     border: none;
     padding: 12px;
-    border-radius: 20px; /* Rounded like a spool */
+    border-radius: 20px;
+    /* Rounded like a spool */
     font-weight: bold;
     cursor: pointer;
     margin-top: auto;
-    box-shadow: 0 4px 0 #880e4f; /* 3D button effect */
+    box-shadow: 0 4px 0 #880e4f;
+    /* 3D button effect */
     transition: all 0.1s;
 }
 
@@ -122,24 +136,29 @@ button:active {
     box-shadow: 0 2px 0 #880e4f;
 }
 
-/* Update Image Container: Reduce height from 200px to 140px */
 .product-image-container {
     width: 100%;
-    height: 140px; 
+    height: 200px;
+    /* Taller image area */
     overflow: hidden;
-    border-radius: 8px;
-    margin-bottom: 10px;
+    background-color: #fff;
+    /* White background for transparent webp files */
+    border-bottom: 1px solid #eee;
 }
 
 .product-image {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* This crops the image to fill the box perfectly */
-    transition: transform 0.3s ease;
+    object-fit: contain;
+    /* 💡 Change to 'cover' if you prefer cropped but filled */
+    padding: 10px;
+    /* Gives the item some air so it doesn't hit the edges */
+    box-sizing: border-box;
 }
 
 .card:hover .product-image {
-    transform: scale(1.05); /* Subtle zoom effect when hovering */
+    transform: scale(1.05);
+    /* Subtle zoom effect when hovering */
 }
 
 /* Cart Icon Styling */
@@ -153,7 +172,7 @@ button:active {
     border-radius: 50%;
     cursor: pointer;
     z-index: 1000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Sidebar Sidebar */
@@ -164,13 +183,14 @@ button:active {
     width: 350px;
     height: 100%;
     background: white;
-    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out;
     z-index: 1001;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    padding-bottom: 40px; /*Extra space at the very bottom of sidebar */
+    padding-bottom: 40px;
+    /*Extra space at the very bottom of sidebar */
 }
 
 /* Off-screen state */
@@ -205,8 +225,10 @@ button:active {
     border-radius: 5px;
     font-size: 1.1rem;
     cursor: pointer;
-    margin-top: 15px;      /* Space above the button */
-    margin-bottom: 10px;   /* Space below the button so it's not cut off */
+    margin-top: 15px;
+    /* Space above the button */
+    margin-bottom: 10px;
+    /* Space below the button so it's not cut off */
 }
 
 /* Add this to style.css */
