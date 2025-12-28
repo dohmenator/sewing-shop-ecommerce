@@ -56,6 +56,7 @@ router.post('/webhook', async (req, res) => {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     let event;
 
+
     try {
         // We use req.rawBody which was attached in index.js
         event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret);
@@ -104,7 +105,7 @@ router.post('/webhook', async (req, res) => {
             console.log(`✨ Success: Order ${orderId} recorded for ${customerEmail}`);
 
             // 3. Trigger the email 
-            await sendOrderConfirmation(customerEmail, totalAmount);
+            await sendOrderConfirmation(customerEmail, totalAmount, orderId, cartItems);
 
         } catch (dbErr) {
             await client.query('ROLLBACK');
@@ -162,25 +163,21 @@ router.patch('/orders/:id/status', authenticateToken, async (req, res) => {
             [status, id]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Order not found" });
-        }
-
-        // --- NEW: If the status changed to 'shipped', trigger the mock email ---
         if (status === 'shipped') {
+            // 🔍 Fetch the items for this order so we can list them in the email
+            const itemResult = await pool.query(
+                'SELECT p.name AS product_name, oi.quantity FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $1',
+                [id]
+            );
+
             const customerEmail = result.rows[0].customer_email;
-            await sendShippingConfirmation(customerEmail, id);
-            console.log(`📦 Shipping notification triggered for Order #${id}`);
+            // Pass the items list to the shipping email function
+            await sendShippingConfirmation(customerEmail, id, itemResult.rows);
         }
 
-        res.json({
-            message: "Status updated successfully",
-            order: result.rows[0]
-        });
-
+        res.json({ message: "Status updated successfully" });
     } catch (err) {
-        console.error('Error updating order:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).send("Server Error");
     }
 });
 
