@@ -123,5 +123,38 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// --- PUT: Update an existing product ---
+router.put('/:id', upload.single('image'), async (req, res) => {
+    const { id } = req.params;
+    const { name, price, description, category_id } = req.body;
+
+    try {
+        // 1. If no new file, we need the existing image URL so we don't overwrite it with null
+        let imageUrl;
+
+        if (req.file) {
+            imageUrl = `/uploads/${req.file.filename}`;
+        } else {
+            // Fetch existing product to get current image_url
+            const currentProduct = await pool.query('SELECT image_url FROM products WHERE id = $1', [id]);
+            imageUrl = currentProduct.rows[0].image_url;
+        }
+
+        const query = `
+            UPDATE products 
+            SET name = $1, price = $2, description = $3, category_id = $4, image_url = $5
+            WHERE id = $6
+            RETURNING *;
+        `;
+
+        const result = await pool.query(query, [name, price, description, category_id, imageUrl, id]);
+        res.json({ message: "Updated!", product: result.rows[0] });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Update failed" });
+    }
+});
+
 
 module.exports = router;
