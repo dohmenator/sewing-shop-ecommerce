@@ -1,3 +1,4 @@
+const fs = require('fs'); // Make sure this is at the very top of your file
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -124,20 +125,43 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 // --- PUT: Update an existing product ---
-router.put('/:id', upload.single('image'), async (req, res) => {
+// backend/routes/productRoutes.js
+
+router.put('/:id', authenticateToken, upload.single('image'), async (req, res) => {
     const { id } = req.params;
     const { name, price, description, category_id } = req.body;
 
     try {
-        // 1. If no new file, we need the existing image URL so we don't overwrite it with null
-        let imageUrl;
+        // 1. Get the current product to find the old image path
+        const currentRes = await pool.query('SELECT image_url FROM products WHERE id = $1', [id]);
+        if (currentRes.rowCount === 0) return res.status(404).json({ error: "Product not found" });
 
+        const oldImagePath = currentRes.rows[0].image_url;
+        let imageUrl = oldImagePath;
+
+        // 2. If a new image is uploaded
         if (req.file) {
             imageUrl = `/uploads/${req.file.filename}`;
-        } else {
-            // Fetch existing product to get current image_url
-            const currentProduct = await pool.query('SELECT image_url FROM products WHERE id = $1', [id]);
-            imageUrl = currentProduct.rows[0].image_url;
+
+            // 🗑️ Delete old file safely
+            if (oldImagePath) {
+                // Remove leading slash so path.join works correctly
+                const relativePath = oldImagePath.startsWith('/') ? oldImagePath.substring(1) : oldImagePath;
+                // Use process.cwd() to get the absolute root path of your project
+                const fullPath = path.join(process.cwd(), relativePath);
+
+                console.log("Cleaning up old image at:", fullPath);
+
+                // Use a nested try/catch so a file-system error doesn't kill the whole server
+                try {
+                    if (fs.existsSync(fullPath)) {
+                        fs.unlinkSync(fullPath);
+                        console.log("Old file deleted successfully.");
+                    }
+                } catch (fsErr) {
+                    console.error("File deletion skipped (it might not exist):", fsErr.message);
+                }
+            }
         }
 
         const query = `
@@ -151,10 +175,9 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         res.json({ message: "Updated!", product: result.rows[0] });
 
     } catch (err) {
-        console.error(err);
+        console.error("Server Error during PUT:", err.message);
         res.status(500).json({ error: "Update failed" });
     }
 });
-
 
 module.exports = router;
