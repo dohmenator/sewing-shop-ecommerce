@@ -21,11 +21,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// --- 2. GET: Fetch all products with Category Dimensions ---
+
+//get all products from products table that are active (active as bonnie wants these rendered)
 router.get('/', async (req, res) => {
     try {
-        // We select everything from products (p.*) 
-        // and specifically the name and description from categories (c)
         const query = `
             SELECT 
                 p.*, 
@@ -33,6 +32,7 @@ router.get('/', async (req, res) => {
                 c.description AS category_dimensions
             FROM products p
             JOIN categories c ON p.category_id = c.id
+            WHERE p.is_active = true
             ORDER BY p.id ASC
         `;
 
@@ -101,5 +101,27 @@ router.post('/', authenticateToken, upload.single('image'), async (req, res) => 
         });
     }
 });
+
+// DELETE a product (well just making it inactive so it does not render)
+router.delete('/:id', authenticateToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Instead of deleting, we set is_active to false
+        const result = await pool.query(
+            'UPDATE products SET is_active = false WHERE id = $1',
+            [id]
+        );
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        res.json({ message: "Product archived successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+});
+
 
 module.exports = router;
